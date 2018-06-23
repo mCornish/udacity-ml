@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """ 
     This is the code to accompany the Lesson 1 (Naive Bayes) mini-project. 
@@ -28,9 +28,16 @@ features_train, features_test, labels_train, labels_test = preprocess()
 ### your code goes here ###
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score
+print()
 clf = GaussianNB()
+
+t_time = time()
 clf.fit(features_train, labels_train)
+print('Training time:', round(time() - t_time, 3), 's')
+
+p_time = time()
 prediction = clf.predict(features_test)
+print('Prediction time:', round(time() - p_time, 3), 's')
 
 score = accuracy_score(labels_test, prediction)
 print(f'Accuracy: {score}')
