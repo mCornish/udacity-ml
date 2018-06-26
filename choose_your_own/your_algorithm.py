@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import matplotlib.pyplot as plt
 from prep_terrain_data import makeTerrainData
@@ -24,21 +24,28 @@ plt.scatter(grade_slow, bumpy_slow, color = "r", label="slow")
 plt.legend()
 plt.xlabel("bumpiness")
 plt.ylabel("grade")
-plt.show()
 ################################################################################
-
 
 ### your code here!  name your classifier object clf if you want the 
 ### visualization code (prettyPicture) to show you the decision boundary
+from sklearn.neighbors import KNeighborsClassifier 
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
+models = [
+    ('KNN', KNeighborsClassifier(n_neighbors=1)),
+    ('ADA', AdaBoostClassifier()),
+    ('RFC', RandomForestClassifier(n_estimators=10, min_samples_split=3, random_state=7))
+]
 
-
-
-
-
-
+for name, clf in models:
+    clf.fit(features_train, labels_train)
+    pred = clf.predict(features_test)
+    acc = accuracy_score(labels_test, pred)
+    print(f'{name} Accuracy: ', acc)
 
 try:
     prettyPicture(clf, features_test, labels_test)
+    plt.show()
 except NameError:
     pass
