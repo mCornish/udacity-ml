@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python3
 
 """ 
     Skeleton code for k-means clustering mini-project.
@@ -39,15 +39,32 @@ def Draw(pred, features, poi, mark_poi=False, name="image.png", f1_name="feature
 
 
 ### load in the dict of dicts containing all the data on each person in the dataset
-data_dict = pickle.load( open("../final_project/final_project_dataset.pkl", "rb") )
+data_dict = pickle.load( open("../final_project/final_project_dataset_unix.pkl", "rb") )
 ### there's an outlier--remove it! 
 data_dict.pop("TOTAL", 0)
 
+stocks = []
+salarys = []
+
+for person in data_dict:
+    stock = data_dict[person]['exercised_stock_options']
+    if stock != 'NaN':
+        stocks.append(stock)
+
+print(min(stocks), max(stocks))
+
+for person in data_dict:
+    salary = data_dict[person]['salary']
+    if salary != 'NaN':
+        salarys.append(salary)
+
+print(min(salarys), max(salarys))
 
 ### the input features we want to use 
 ### can be any key in the person-level dictionary (salary, director_fees, etc.) 
 feature_1 = "salary"
 feature_2 = "exercised_stock_options"
+feature_3 = "total_payments"
 poi  = "poi"
 features_list = [poi, feature_1, feature_2]
 data = featureFormat(data_dict, features_list )
@@ -64,8 +81,10 @@ plt.show()
 
 ### cluster here; create predictions of the cluster labels
 ### for the data and store them to a list called pred
+from sklearn.cluster import KMeans
 
-
+clus = KMeans(n_clusters=2).fit(finance_features)
+pred = clus.predict(finance_features)
 
 
 ### rename the "name" parameter when you change the number of features
@@ -73,4 +92,4 @@ plt.show()
 try:
     Draw(pred, finance_features, poi, mark_poi=False, name="clusters.pdf", f1_name=feature_1, f2_name=feature_2)
 except NameError:
-    print "no predictions object named pred found, no clusters to plot"
+    print("no predictions object named pred found, no clusters to plot")
