@@ -23,12 +23,10 @@ import logging
 import pylab as pl
 import numpy as np
 
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.datasets import fetch_lfw_people
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.decomposition import RandomizedPCA
+from sklearn.metrics import classification_report, confusion_matrix, f1_score
+from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 
 # Display progress logs on stdout
@@ -66,12 +64,29 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random
 ###############################################################################
 # Compute a PCA (eigenfaces) on the face dataset (treated as unlabeled
 # dataset): unsupervised feature extraction / dimensionality reduction
+n_components = [10, 15, 25, 50, 100, 250]
+
+param_grid = {
+         'C': [1e3, 5e3, 1e4, 5e4, 1e5],
+          'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
+          }
+for n in n_components:
+    pca = PCA(n_components=n, whiten=True, svd_solver='randomized').fit(X_train)
+    eigenfaces = pca.components_.reshape((n, h, w))
+    X_train_pca = pca.transform(X_train)
+    X_test_pca = pca.transform(X_test)
+    clf = GridSearchCV(SVC(kernel='rbf', class_weight='balanced'), param_grid)
+    clf = clf.fit(X_train_pca, y_train)
+    y_pred = clf.predict(X_test_pca)
+    print(f'F1 score ({n}): ', f1_score(y_test, y_pred, average='macro'))
+
 n_components = 150
 
 print("Extracting the top %d eigenfaces from %d faces" % (n_components, X_train.shape[0]))
 t0 = time()
-pca = RandomizedPCA(n_components=n_components, whiten=True).fit(X_train)
+pca = PCA(n_components=n_components, whiten=True, svd_solver='randomized').fit(X_train)
 print("done in %0.3fs" % (time() - t0))
+print('Variance ratio: ', pca.explained_variance_ratio_)
 
 eigenfaces = pca.components_.reshape((n_components, h, w))
 
